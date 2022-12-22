@@ -1,0 +1,22 @@
+
+# Ignore everything
+*
+
+# But not the following folders or files
+!.gitignore
+
+#
+!Flightmare
+Flightmare.meta
+
+#
+!RPGGate
+RPGGate.meta
+
+#
+!Resources
+Resoucres.meta
+
+#
+Top_Level_Scene.unity
+Top_Level_Scene.unity.meta

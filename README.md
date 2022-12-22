@@ -10,10 +10,8 @@ of the [RPG Flightmare simulator](https://github.com/uzh-rpg/flightmare).
 
 ---
 
-Read the documentation (TODO: Add readTheDocs link)
+Read the [WIKI](https://github.com/uzh-rpg/rpg_flightmare_unity/wiki) for [installation](https://github.com/uzh-rpg/rpg_flightmare_unity/wiki/Installation-Guide), [usage](https://github.com/uzh-rpg/rpg_flightmare_unity/wiki/Usage-Guide) and [developer](https://github.com/uzh-rpg/rpg_flightmare_unity/wiki/Developer-Guide) guide.
 
 # Acknowledgements
 
 This project is inspired by [FlightGoggles](https://github.com/mit-fast/FlightGoggles), we use some components from FlightGoggles. 
-
-The demo scene **Industrial**, which we added in the repository, was created by Dmitrii Kutsenko and is freely available in the asset store. The original asset can be found [here](https://assetstore.unity.com/packages/3d/environments/industrial/rpg-fps-game-assets-for-pc-mobile-industrial-set-v2-0-86679). 
