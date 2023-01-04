@@ -20,3 +20,14 @@ Resoucres.meta
 #
 Top_Level_Scene.unity
 Top_Level_Scene.unity.meta
+
+# not cs files
+!*.cs
+*.meta
+.DS_Store
+*.mat
+*.blend
+*.prefab
+*.fbx
+*.FBX
+*.log
