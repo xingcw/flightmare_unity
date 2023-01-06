@@ -41,6 +41,23 @@ namespace RPGFlightmare
     public Dictionary<string, bool> support_antialiasing = new Dictionary<string, bool>() { };
     public Dictionary<string, bool> needs_rescale = new Dictionary<string, bool>() { };
 
+    public Dictionary<string, int> semantic_labels = new Dictionary<string, int>(){
+      {"roof", 0},
+      {"wall", 1},
+      {"_box", 2},  // avoid conflicts with "toolbox" label
+      {"trolley", 3},
+      {"toolbox", 4},
+      {"floor", 5},
+      {"generator", 6},
+      {"scaffold", 7},
+      {"pallet", 8},
+      {"lamp", 9},
+      {"frame", 10},
+      {"Flare", 11},
+      {"GroupLight", 12},
+      {"gate", 13},
+    };
+
     public List<string> image_modes = new List<string>() { "depth", "object_segment", "optical_flow" };
     void Start()
     {
@@ -138,8 +155,25 @@ namespace RPGFlightmare
         var id = r.gameObject.GetInstanceID();
         var layer = r.gameObject.layer;
         var tag = r.gameObject.tag;
+        string obj_name = r.gameObject.name;
 
-        mpb.SetColor("_ObjectColor", ColorEncoding.EncodeIDAsColor(id));
+        int semantic_label = 0;
+
+        Debug.Log("Object id: " + id);
+        Debug.Log("Object name: " + obj_name);
+        // Debug.Log("Layer id: " + layer);
+        // Debug.Log("Tag id: " + tag);
+
+        // TODO: this search could be expensive, change the game object names formatting
+        foreach(KeyValuePair<string, int> element in semantic_labels){
+          if (obj_name.Contains(element.Key)){
+            Debug.Log("found the semantic label of " + obj_name);
+            Debug.Log("its label is: " + element.Value);
+            semantic_label = element.Value;
+          }
+        }
+
+        mpb.SetColor("_ObjectColor", ColorEncoding.EncodeSemanticIDAsColor(semantic_label));
         mpb.SetColor("_CategoryColor", ColorEncoding.EncodeLayerAsColor(layer));
         r.SetPropertyBlock(mpb);
       }

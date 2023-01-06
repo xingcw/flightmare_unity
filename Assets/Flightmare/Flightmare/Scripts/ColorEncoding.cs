@@ -76,4 +76,33 @@ public class ColorEncoding
 
 		return color;
 	}
+
+	public static Color EncodeSemanticIDAsColor(int semantic_id)
+	{
+		// following value must be in the range (0.5 .. 1.0)
+		// in order to avoid color overlaps when using 'divider' in this func
+		var z = .7f;
+
+		// first 8 layers are Unity built-in layers
+		// Unity supports up to 32 layers in total
+
+		// let's create palette of unique 16 colors
+		var uniqueColors = new Color[] {
+			new Color(z,1,z,1), new Color(z,z,z,1),						// 0
+			new Color(1,1,z,1), new Color(1,z,1,1), new Color(z,1,1,1), // 
+			new Color(1,z,0,1), new Color(z,0,1,1), new Color(0,1,z,1), // 7
+			
+			new Color(1,0,0,1), new Color(0,1,0,1), new Color(0,0,1,1), // 8
+			new Color(1,1,0,1), new Color(1,0,1,1), new Color(0,1,1,1), // 
+			new Color(1,z,z,1), new Color(1,1,1,1)						// 15
+		};
+
+		// create as many colors as necessary by using base 16 color palette
+		// to create more than 16 - will simply adjust brightness with 'divider'
+		var color = uniqueColors[semantic_id % uniqueColors.Length];
+		// var divider = 1.0f + Mathf.Floor(semantic_id / uniqueColors.Length);
+		// color /= divider;
+
+		return color;
+	}
 }
