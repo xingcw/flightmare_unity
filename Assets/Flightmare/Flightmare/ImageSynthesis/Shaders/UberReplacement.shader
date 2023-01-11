@@ -9,6 +9,7 @@ Properties {
 
 	_ObjectColor ("Object Color", Color) = (1,1,1,1)
 	_CategoryColor ("Catergory Color", Color) = (0,1,0,1)
+	_SemanticLabel ("Semantic Label", Float) = 0.0
 }
 
 SubShader {
@@ -17,6 +18,7 @@ CGINCLUDE
 fixed4 _ObjectColor;
 fixed4 _CategoryColor;
 int _OutputMode;
+float _SemanticLabel;
 
 // remap depth: [0 @ eye .. 1 @ far] => [0 @ near .. 1 @ far]
 inline float Linear01FromEyeToLinear01FromNear(float depth01)
@@ -34,7 +36,9 @@ float4 Output(float depth01, float3 normal)
 		CatergoryId			= 1,
 		DepthCompressed		= 2,
 		DepthMultichannel	= 3,
-		Normals				= 4
+		Normals				= 4,
+		DpethRaw            = 5,
+		SemanticLabel       = 6
 	};*/
 
 	if (_OutputMode == 0) // ObjectId
@@ -66,6 +70,10 @@ float4 Output(float depth01, float3 normal)
 	else if (_OutputMode == 5) // DepthRaw
 	{
 		return depth01;
+	}
+	else if (_OutputMode == 6) // SemanticLabel (one channel integer)
+	{
+		return _SemanticLabel;
 	}
 
 

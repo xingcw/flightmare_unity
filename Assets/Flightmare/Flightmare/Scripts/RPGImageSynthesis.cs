@@ -37,28 +37,35 @@ namespace RPGFlightmare
       DepthMultichannel = 3,
       Normals = 4,
       DepthRaw = 5,
+      SemanticLabel = 6,
     };
     public Dictionary<string, bool> support_antialiasing = new Dictionary<string, bool>() { };
     public Dictionary<string, bool> needs_rescale = new Dictionary<string, bool>() { };
 
-    public Dictionary<string, int> semantic_labels = new Dictionary<string, int>(){
-      {"roof", 0},
-      {"wall", 1},
-      {"_box", 2},  // avoid conflicts with "toolbox" label
-      {"trolley", 3},
-      {"toolbox", 4},
-      {"floor", 5},
-      {"generator", 6},
-      {"scaffold", 7},
-      {"pallet", 8},
-      {"lamp", 9},
-      {"frame", 10},
-      {"Flare", 11},
-      {"GroupLight", 12},
-      {"gate", 13},
+    public Dictionary<string, float> semantic_labels = new Dictionary<string, float>(){
+      // start index from 1.0, keep 0.0 for unknown classes.
+      {"roof", 1.0f},
+      {"wall", 2.0f},
+      {"_box", 3.0f},  // avoid conflicts with "toolbox" label
+      {"trolley", 4.0f},
+      {"toolbox", 5.0f},
+      {"floor", 6.0f},
+      {"generator", 7.0f},
+      {"scaffold", 8.0f},
+      {"pallet", 9.0f},
+      {"lamp", 10.0f},
+      {"frame", 11.0f},
+      {"Flare", 12.0f},
+      {"GroupLight", 13.0f},
+      {"gate", 14.0f},
     };
+    
+    // change the list here for the enabled layers for unity bridge.
+    // all available: "depth" "object_segment" "category_segment" "optical_flow" "semantic_label"
+    // Note: you need to change the list in the Unity Editor to make it take effect !!!!
+    // Changes of the list item here would not make any difference before you change the unity editor prefab.
+    public List<string> image_modes = new List<string>() { "depth", "semantic_label", "optical_flow" };
 
-    public List<string> image_modes = new List<string>() { "depth", "object_segment", "optical_flow" };
     void Start()
     {
       // default fallbacks, if shaders are unspecified
@@ -67,6 +74,11 @@ namespace RPGFlightmare
 
       if (!opticalFlowShader)
         opticalFlowShader = Shader.Find("Hidden/OpticalFlow");
+
+      // foreach (string layer in image_modes)
+      // {
+      //   Debug.Log("Stored image mode: " + layer);
+      // }
     }
 
     static private void SetupCameraWithPostShader(Camera cam, Material material, DepthTextureMode depthTextureMode = DepthTextureMode.None)
@@ -84,6 +96,7 @@ namespace RPGFlightmare
     {
       var cb = new CommandBuffer();
       cb.SetGlobalFloat("_OutputMode", (int)mode); // @TODO: CommandBuffer is missing SetGlobalInt() method
+      // Debug.Log("Using the image mode here: " + (int)mode);
       cam.AddCommandBuffer(CameraEvent.BeforeForwardOpaque, cb);
       cam.AddCommandBuffer(CameraEvent.BeforeFinalPass, cb);
       cam.SetReplacementShader(shader, "");
@@ -125,7 +138,7 @@ namespace RPGFlightmare
           if (!support_antialiasing.ContainsKey(image_mode)) support_antialiasing[image_mode] = false;
           if (!needs_rescale.ContainsKey(image_mode)) needs_rescale[image_mode] = false;
           break;
-        // Setup Catergory Segmentation for the camera
+        // Setup Category Segmentation for the camera
         case "category_segment":
           SetupCameraWithReplacementShader(subcam, uberReplacementShader, ReplacelementModes.CatergoryId);
           if (!support_antialiasing.ContainsKey(image_mode)) support_antialiasing[image_mode] = false;
@@ -133,7 +146,6 @@ namespace RPGFlightmare
           break;
         // Setup compressed depth for the camera
         case "depth":
-          //SetupCameraWithReplacementShader(subcam, uberReplacementShader, ReplacelementModes.DepthCompressed, Color.white);
           SetupCameraWithReplacementShader(subcam, uberReplacementShader, ReplacelementModes.DepthRaw, Color.white);
           if (!support_antialiasing.ContainsKey(image_mode)) support_antialiasing[image_mode] = true;
           if (!needs_rescale.ContainsKey(image_mode)) needs_rescale[image_mode] = false;
@@ -142,6 +154,11 @@ namespace RPGFlightmare
         case "optical_flow": // TODO: color encoding does not work well.......
           SetupCameraWithPostShader(subcam, opticalFlowMaterial, DepthTextureMode.Depth | DepthTextureMode.MotionVectors);
           if (!support_antialiasing.ContainsKey(image_mode)) support_antialiasing[image_mode] = false;
+          if (!needs_rescale.ContainsKey(image_mode)) needs_rescale[image_mode] = false;
+          break;
+        case "semantic_label":
+          SetupCameraWithReplacementShader(subcam, uberReplacementShader, ReplacelementModes.SemanticLabel, Color.white);
+          if (!support_antialiasing.ContainsKey(image_mode)) support_antialiasing[image_mode] = true;
           if (!needs_rescale.ContainsKey(image_mode)) needs_rescale[image_mode] = false;
           break;
       }
@@ -155,35 +172,40 @@ namespace RPGFlightmare
         var id = r.gameObject.GetInstanceID();
         var layer = r.gameObject.layer;
         var tag = r.gameObject.tag;
+        
         string obj_name = r.gameObject.name;
+        float semantic_label = 0.0f;
 
-        int semantic_label = 0;
-
-        Debug.Log("Object id: " + id);
-        Debug.Log("Object name: " + obj_name);
+        // Debug.Log("Object id: " + id);
+        // Debug.Log("Object name: " + obj_name);
         // Debug.Log("Layer id: " + layer);
-        // Debug.Log("Tag id: " + tag);
 
         // TODO: this search could be expensive, change the game object names formatting
-        foreach(KeyValuePair<string, int> element in semantic_labels){
+        foreach(KeyValuePair<string, float> element in semantic_labels){
           if (obj_name.Contains(element.Key)){
-            Debug.Log("found the semantic label of " + obj_name);
-            Debug.Log("its label is: " + element.Value);
+            // Debug.Log("found the semantic label of " + obj_name);
+            // Debug.Log("its label is: " + element.Value);
             semantic_label = element.Value;
           }
         }
 
-        mpb.SetColor("_ObjectColor", ColorEncoding.EncodeSemanticIDAsColor(semantic_label));
+        mpb.SetColor("_ObjectColor", ColorEncoding.EncodeIDAsColor(id));
         mpb.SetColor("_CategoryColor", ColorEncoding.EncodeLayerAsColor(layer));
+        mpb.SetFloat("_SemanticLabel", semantic_label);
         r.SetPropertyBlock(mpb);
       }
     }
     public byte[] getRawImage(Camera subcam, int width, int height, string image_mode)
     {
+      // Debug.Log("current image mode is: " + image_mode);
       bool supportsAntialiasing = support_antialiasing[image_mode];
       bool needsRescale = needs_rescale[image_mode];
-      var depth = 24;
-      var format = image_mode=="depth" ? RenderTextureFormat.RFloat : RenderTextureFormat.Default;
+      var depth = 24;  // this magic number corresponds to RenderTextureFormat.RGBAUShort.
+      var format = RenderTextureFormat.Default;
+      if (image_mode == "depth" || image_mode == "semantic_label")
+      {
+        format = RenderTextureFormat.RFloat;
+      }
       var readWrite = RenderTextureReadWrite.Default;
       var antiAliasing = (supportsAntialiasing) ? Mathf.Max(1, QualitySettings.antiAliasing) : 1;
 
@@ -193,7 +215,8 @@ namespace RPGFlightmare
 
       var renderRT = (!needsRescale) ? finalRT :
           RenderTexture.GetTemporary(subcam.pixelWidth, subcam.pixelHeight, depth, format, readWrite, antiAliasing);
-      var tex = new Texture2D(width, height, image_mode=="depth" ? TextureFormat.RFloat : TextureFormat.RGB24, false);
+      var tex = new Texture2D(width, height, 
+          (image_mode == "depth" || image_mode == "semantic_label") ? TextureFormat.RFloat : TextureFormat.RGB24, false);
 
       var prevActiveRT = RenderTexture.active;
       var prevCameraRT = subcam.targetTexture;
