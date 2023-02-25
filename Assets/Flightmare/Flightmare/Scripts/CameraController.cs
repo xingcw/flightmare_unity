@@ -49,7 +49,7 @@ namespace RPGFlightmare
     [HideInInspector]
     public const string client_ip_pref_key = "client_ip";
     [HideInInspector]
-    public const int connection_timeout_seconds_default = 5;
+    public const int connection_timeout_seconds_default = 20;
     [HideInInspector]
     public string rpg_dsim_version = "";
 
@@ -193,6 +193,7 @@ namespace RPGFlightmare
       push_socket.Close();
       Debug.Log("Terminated ZMQ sockets.");
       NetMQConfig.Cleanup();
+      Destroy(this.gameObject);
     }
 
     void InstantiateSockets()
