@@ -49,7 +49,7 @@ namespace RPGFlightmare
     [HideInInspector]
     public const string client_ip_pref_key = "client_ip";
     [HideInInspector]
-    public const int connection_timeout_seconds_default = 20;
+    public const int connection_timeout_seconds_default = 50;
     [HideInInspector]
     public string rpg_dsim_version = "";
 

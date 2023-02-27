@@ -44,20 +44,22 @@ namespace RPGFlightmare
 
     public Dictionary<string, float> semantic_labels = new Dictionary<string, float>(){
       // start index from 1.0, keep 0.0 for unknown classes.
+      // make `wall` and `roof` related together, and `objects` `floor` related together.
+      // stand out `gate` as one category.
       {"roof", 1.0f},
-      {"wall", 2.0f},
-      {"_box", 3.0f},  // avoid conflicts with "toolbox" label
-      {"trolley", 4.0f},
-      {"toolbox", 5.0f},
-      {"floor", 6.0f},
-      {"generator", 7.0f},
-      {"scaffold", 8.0f},
-      {"pallet", 9.0f},
-      {"lamp", 10.0f},
-      {"frame", 11.0f},
-      {"Flare", 12.0f},
-      {"GroupLight", 13.0f},
-      {"gate", 14.0f},
+      {"wall", 1.0f},
+      {"_box", 1.0f},  // avoid conflicts with "toolbox" label
+      {"trolley", 2.0f},
+      {"toolbox", 2.0f},
+      {"floor", 2.0f},
+      {"generator", 2.0f},
+      {"scaffold", 1.0f},
+      {"pallet", 2.0f},
+      {"lamp", 1.0f},
+      {"frame", 1.0f},
+      {"Flare", 1.0f},
+      {"GroupLight", 1.0f},
+      {"gate", 3.0f},
     };
     
     // change the list here for the enabled layers for unity bridge.
